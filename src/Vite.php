@@ -11,19 +11,19 @@ final class Vite
     protected array $configs = [];
 
     /**
-     * @var (Closure(string, Innocenzi\Vite\Chunk|null): string)
+     * @var Closure|null (Closure(string, Innocenzi\Vite\Chunk|null): string)
      */
-    public static Closure|null $makeScriptTagsCallback = null;
-    
-    /**
-     * @var (Closure(string, Innocenzi\Vite\Chunk|null): string)
-     */
-    public static Closure|null $makeStyleTagsCallback = null;
+    public static ?Closure $makeScriptTagsCallback = null;
 
     /**
-     * @var (Closure(Innocenzi\Vite\Configuration): bool|null)
+     * @var Closure|null (Closure(string, Innocenzi\Vite\Chunk|null): string)
      */
-    public static Closure|null $useManifestCallback = null;
+    public static ?Closure $makeStyleTagsCallback = null;
+
+    /**
+     * @var Closure|null (Closure(Innocenzi\Vite\Configuration): bool|null)
+     */
+    public static ?Closure $useManifestCallback = null;
 
     /**
      * Gets the given configuration or the default one.
@@ -38,7 +38,7 @@ final class Vite
     /**
      * Sets the logic for creating a script tag.
      *
-     * @param (Closure(string, Innocenzi\Vite\Chunk|null): string) $callback
+     * @param Closure|null $callback
      */
     public static function makeScriptTagsUsing(Closure $callback = null): void
     {
@@ -48,7 +48,7 @@ final class Vite
     /**
      * Sets the logic for creating a style tag.
      *
-     * @param (Closure(string, Innocenzi\Vite\Chunk|null): string) $callback
+     * @param Closure|null $callback
      */
     public static function makeStyleTagsUsing(Closure $callback = null): void
     {
@@ -58,13 +58,13 @@ final class Vite
     /**
      * Sets the logic for determining if the manifest should be used.
      *
-     * @param (Closure(Innocenzi\Vite\Configuration): bool|null) $callback
+     * @param Closure|null $callback
      */
     public static function useManifest(Closure $callback = null): void
     {
         static::$useManifestCallback = $callback;
     }
-    
+
     /**
      * Execute a method against the default configuration.
      */

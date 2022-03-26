@@ -13,17 +13,21 @@ final class Manifest implements Stringable
     protected Collection $chunks;
     protected Collection $entries;
 
+    protected ?string $path;
+
     /**
      * Creates a Manifest instance.
      *
-     * @param string $path Absolute path to the manifest
+     * @param string|null $path Absolute path to the manifest
+     *
+     * @throws ManifestNotFoundException
      */
-    public function __construct(protected string|null $path)
+    public function __construct(?string$path)
     {
         $this->path = str_replace('\\', '/', $path);
         
         if (!$path || !file_exists($path)) {
-            throw new ManifestNotFoundException($path, static::guessConfigName($path));
+            throw new ManifestNotFoundException($path, Manifest::guessConfigName($path));
         }
 
         $this->chunks = Collection::make(json_decode(file_get_contents($path), true));
@@ -34,6 +38,8 @@ final class Manifest implements Stringable
 
     /**
      * Reads the manifest file and returns its representation.
+     *
+     * @throws ManifestNotFoundException
      */
     public static function read(string $path): Manifest
     {
@@ -50,6 +56,8 @@ final class Manifest implements Stringable
 
     /**
      * Gets the manifest entry for the given name.
+     *
+     * @throws NoSuchEntrypointException
      */
     public function getEntry(string $name): Chunk
     {
@@ -79,7 +87,7 @@ final class Manifest implements Stringable
     /**
      * Guesses the configuration name for a given path.
      */
-    public static function guessConfigName(string $path): string|null
+    public static function guessConfigName(string $path): ?string
     {
         $path = str_replace(['\\', '//'], '/', $path);
         $public = str_replace(['\\', '//'], '/', public_path());

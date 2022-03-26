@@ -12,9 +12,13 @@ class ExportConfigurationCommand extends Command
     public $description = 'Prints the Vite configuration.';
     public $hidden = true;
 
-    public function __construct(protected EntrypointsFinder $entrypointsFinder)
+    protected EntrypointsFinder $entrypointsFinder;
+
+    public function __construct(EntrypointsFinder $entrypointsFinder)
     {
         parent::__construct();
+
+        $this->entrypointsFinder = $entrypointsFinder;
     }
 
     public function handle()

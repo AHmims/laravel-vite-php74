@@ -7,8 +7,11 @@ use Innocenzi\Vite\Vite;
 
 final class CallbackTagGenerator implements TagGenerator
 {
-    public function __construct(protected DefaultTagGenerator $tagGenerator)
+    protected DefaultTagGenerator $tagGenerator;
+
+    public function __construct(DefaultTagGenerator $tagGenerator)
     {
+        $this->tagGenerator = $tagGenerator;
     }
 
     public function makeScriptTag(string $url, Chunk $chunk = null): string

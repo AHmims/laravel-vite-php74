@@ -2,46 +2,77 @@
 
 namespace Innocenzi\Vite;
 
+use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use Innocenzi\Vite\TagGenerators\TagGenerator;
-use Stringable;
 
-final class Chunk implements Stringable
+final class Chunk implements Htmlable
 {
     protected TagGenerator $tagGenerator;
 
+    public Manifest $manifest;
+
+    public string $file;
+
+    public ?string $src;
+
+    public bool $isEntry;
+
+    public bool $isDynamicEntry;
+
+    public Collection $css;
+
+    public Collection $imports;
+
+    public Collection $dynamicImports;
+
+    public Collection $assets;
+
+    public ?string $integrity;
+
     public function __construct(
-        public Manifest $manifest,
-        public string $file,
-        public string|null $src,
-        public bool $isEntry,
-        public bool $isDynamicEntry,
-        public Collection $css,
-        public Collection $imports,
-        public Collection $dynamicImports,
-        public Collection $assets,
-        public string|null $integrity = null
+        Manifest $manifest,
+        string $file,
+        $src,
+        bool $isEntry,
+        bool $isDynamicEntry,
+        Collection $css,
+        Collection $imports,
+        Collection $dynamicImports,
+        Collection $assets,
+        $integrity = null
     ) {
+        $this->manifest = $manifest;
+        $this->file = $file;
+        $this->src = $src;
+        $this->isEntry = $isEntry;
+        $this->isDynamicEntry = $isDynamicEntry;
+        $this->css = $css;
+        $this->imports = $imports;
+        $this->dynamicImports = $dynamicImports;
+        $this->assets = $assets;
+        $this->integrity = $integrity;
+
         $this->tagGenerator = app(TagGenerator::class);
     }
 
     /**
      * Generates a manifest entry from an array.
      */
-    public static function fromArray(Manifest $manifest, array $manifestEntry): static
+    public static function fromArray(Manifest $manifest, array $manifestEntry): self
     {
-        return new static(
-            manifest: $manifest,
-            file: $manifestEntry['file'] ?? '',
-            src: $manifestEntry['src'] ?? null,
-            isEntry: $manifestEntry['isEntry'] ?? false,
-            isDynamicEntry: $manifestEntry['isDynamicEntry'] ?? false,
-            css: collect($manifestEntry['css'] ?? []),
-            imports: collect($manifestEntry['imports'] ?? []),
-            dynamicImports: collect($manifestEntry['dynamicImports'] ?? []),
-            assets: collect($manifestEntry['assets'] ?? []),
-            integrity: $manifestEntry['integrity'] ?? null
+        return new Chunk(
+            $manifest,
+            $manifestEntry['file'] ?? '',
+            $manifestEntry['src'] ?? null,
+            $manifestEntry['isEntry'] ?? false,
+            $manifestEntry['isDynamicEntry'] ?? false,
+            collect($manifestEntry['css'] ?? []),
+            collect($manifestEntry['imports'] ?? []),
+            collect($manifestEntry['dynamicImports'] ?? []),
+            collect($manifestEntry['assets'] ?? []),
+            $manifestEntry['integrity'] ?? null
         );
     }
 
@@ -64,7 +95,7 @@ final class Chunk implements Stringable
      */
     public function getStyleTags(): Collection
     {
-        return $this->css->map(fn (string $path) => $this->tagGenerator->makeStyleTag($this->getAssetUrl($path)));
+        return $this->css->map(fn(string $path) => $this->tagGenerator->makeStyleTag($this->getAssetUrl($path)));
     }
 
     /**
@@ -93,8 +124,13 @@ final class Chunk implements Stringable
         return asset(sprintf('%s%s', $base, $path));
     }
 
-    public function __toString(): string
+    public function toHtml()
     {
         return $this->getTags()->join('');
+    }
+
+    public function __toString(): string
+    {
+        return $this->toHtml();
     }
 }

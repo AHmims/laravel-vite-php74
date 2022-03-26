@@ -11,7 +11,7 @@ it('guesses the configuration name from the manifest path', function () {
 
     expect(Manifest::guessConfigName(public_path('build/config-name/manifest.json')))
         ->toBe('config-name');
-        
+
     set_vite_config('default', [
         'build_path' => 'build',
     ]);

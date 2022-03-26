@@ -7,7 +7,13 @@ use Illuminate\Support\Facades\File;
 
 final class DefaultEntrypointsFinder implements EntrypointsFinder
 {
-    public function find(string|array $paths, string|array $ignore): Collection
+    /**
+     * @param array|string $paths
+     * @param array|string $ignore
+     *
+     * @return Collection
+     */
+    public function find($paths, $ignore): Collection
     {
         return collect($paths)
             ->flatMap(function (string $fileOrDirectory) {
@@ -22,12 +28,12 @@ final class DefaultEntrypointsFinder implements EntrypointsFinder
                 if (is_dir($fileOrDirectory)) {
                     return File::files($fileOrDirectory);
                 }
-                
+
                 return [new \SplFileInfo($fileOrDirectory)];
             })
-            ->unique(fn (\SplFileInfo $file) => $file->getPathname())
+            ->unique(fn(\SplFileInfo $file) => $file->getPathname())
             ->filter(function (\SplFileInfo $file) use ($ignore) {
-                return !collect($ignore)->some(fn ($pattern) => preg_match($pattern, $file->getFilename()));
+                return !collect($ignore)->some(fn($pattern) => preg_match($pattern, $file->getFilename()));
             });
     }
 }

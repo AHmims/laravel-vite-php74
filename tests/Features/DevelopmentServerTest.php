@@ -15,7 +15,7 @@ it('uses uses the manifest in tests when instructed', function () {
 
     config()->set('vite.testing.use_manifest', true);
     expect(vite()->usesManifest())->toBeTrue();
-    
+
     config()->set('vite.testing.use_manifest', false);
     expect(vite()->usesManifest())->toBeFalse();
 });
@@ -28,12 +28,12 @@ it('uses the manifest when the development server is disabled', function () {
             'enabled' => false,
         ],
     ]);
-    
+
     expect(vite()->usesManifest())->toBeTrue();
 });
 
 it('uses the manifest when the development server is unreachable', function () {
-    with_dev_server(reacheable: false);
+    with_dev_server(false);
     set_env('local');
     expect(vite()->usesManifest())->toBeTrue();
 });
@@ -65,7 +65,7 @@ it('generates the Vite client script tag with the other tags', function () {
             'paths' => 'entrypoints/multiple',
         ],
     ]);
-    
+
     expect(vite()->getTags())
         ->toContain('<script type="module" src="http://localhost:3000/@vite/client"></script>')
         ->toContain('<script type="module" src="http://localhost:3000/entrypoints/multiple/main.ts"></script>')

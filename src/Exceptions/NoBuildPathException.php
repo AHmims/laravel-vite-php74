@@ -8,9 +8,13 @@ use Facade\IgnitionContracts\Solution;
 
 final class NoBuildPathException extends ViteException implements ProvidesSolution
 {
+    protected ?string $configName;
+
     public function __construct(
-        protected ?string $configName = null
+        ?string $configName = null
     ) {
+        $this->configName = $configName;
+
         $this->message = $this->hasConfigName()
             ? "The build path for the \"{$this->getConfigName()}\" configuration is not defined."
             : "The build path is not defined.";

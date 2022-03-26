@@ -95,12 +95,12 @@ function set_vite_config(string $name, array $config): void
 function with_dev_server(bool $reacheable = true)
 {
     if (!$reacheable) {
-        return Http::fake(fn () => Http::response(status: 503));
+        return Http::fake(fn () => Http::response(null, 503));
     }
 
     return Http::fake([
-        Vite::CLIENT_SCRIPT_PATH => Http::response(status: 200),
-        '*' => Http::response(status: 404),
+        Vite::CLIENT_SCRIPT_PATH => Http::response(null, 200),
+        '*' => Http::response(null, 404),
     ]);
 }
 
@@ -114,7 +114,7 @@ function sandbox(callable $callback, string $base = __DIR__, bool $preserve = fa
     $initial_base_path = base_path();
 
     app()->setBasePath($sandbox_path);
-    File::makeDirectory($sandbox_path, recursive: true);
+    File::makeDirectory($sandbox_path, 0755, true);
     $callback($sandbox_path);
     app()->setBasePath($initial_base_path);
 

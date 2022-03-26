@@ -9,8 +9,8 @@ interface EntrypointsFinder
     /**
      * Finds entrypoints.
      *
-     * @param array $paths Paths to files or directories that contain entrypoints.
-     * @param string $ignore Regular expression to match againsts paths.
+     * @param array|string$paths Paths to files or directories that contain entrypoints.
+     * @param string|array $ignore Regular expression to match againsts paths.
      */
-    public function find(string|array $paths, string|array $ignore): Collection;
+    public function find($paths, $ignore): Collection;
 }

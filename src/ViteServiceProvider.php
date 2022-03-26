@@ -34,10 +34,16 @@ class ViteServiceProvider extends PackageServiceProvider
 
     protected function registerBindings()
     {
-        $this->app->singleton(Vite::class, fn () => new Vite());
+        $this->app->singleton(Vite::class, fn() => new Vite());
 
-        $this->app->bind(EntrypointsFinder::class, config('vite.interfaces.entrypoints_finder', DefaultEntrypointsFinder::class));
-        $this->app->bind(HeartbeatChecker::class, config('vite.interfaces.heartbeat_checker', HttpHeartbeatChecker::class));
+        $this->app->bind(
+            EntrypointsFinder::class,
+            config('vite.interfaces.entrypoints_finder', DefaultEntrypointsFinder::class)
+        );
+        $this->app->bind(
+            HeartbeatChecker::class,
+            config('vite.interfaces.heartbeat_checker', HttpHeartbeatChecker::class)
+        );
         $this->app->bind(TagGenerator::class, config('vite.interfaces.tag_generator', CallbackTagGenerator::class));
     }
 
@@ -54,20 +60,22 @@ class ViteServiceProvider extends PackageServiceProvider
                     $expression ?: '"' . config('vite.default') . '"'
                 );
             });
-            
+
             /**
              * @tag('entry')
              * @tag('entry', 'configName')
              */
             $compiler->directive('tag', function ($expression = null) {
-                $args = collect(explode(',', $expression))->map(fn ($str) => trim($str));
+                $args = collect(explode(',', $expression))->map(fn($str) => trim($str));
 
                 if (!\in_array(\count($args), [1, 2])) {
-                    throw new InvalidArgumentException('The @tag directive accepts one or two arguments, ' . \count($args) . ' given.');
+                    throw new InvalidArgumentException(
+                        'The @tag directive accepts one or two arguments, ' . \count($args) . ' given.'
+                    );
                 }
-                
+
                 [$entryName, $configName] = $args->toArray() + ['', '"' . config('vite.default') . '"'];
-                
+
                 return sprintf(
                     '<?php echo vite_tag(e(%s), e(%s)); ?>',
                     $entryName,

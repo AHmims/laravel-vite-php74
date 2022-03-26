@@ -13,22 +13,37 @@ use Innocenzi\Vite\TagGenerators\TagGenerator;
 
 final class Configuration
 {
+    protected string $name;
+    protected ?Manifest $manifest = null;
+    protected ?EntrypointsFinder $entrypointsFinder = null;
+    protected ?HeartbeatChecker $heartbeatChecker = null;
+    protected ?TagGenerator $tagGenerator = null;
+
+    /**
+     * @throws NoSuchConfigurationException
+     */
     public function __construct(
-        protected string $name,
-        protected ?Manifest $manifest = null,
-        protected ?EntrypointsFinder $entrypointsFinder = null,
-        protected ?HeartbeatChecker $heartbeatChecker = null,
-        protected ?TagGenerator $tagGenerator = null,
+        string $name,
+        ?Manifest $manifest = null,
+        ?EntrypointsFinder $entrypointsFinder = null,
+        ?HeartbeatChecker $heartbeatChecker = null,
+        ?TagGenerator $tagGenerator = null
     ) {
+        $this->name = $name;
+        $this->manifest = $manifest;
+        $this->entrypointsFinder = $entrypointsFinder;
+        $this->heartbeatChecker = $heartbeatChecker;
+        $this->tagGenerator = $tagGenerator;
+
         if (!config()->has("vite.configs.${name}")) {
             throw new NoSuchConfigurationException($name);
         }
 
-        $this->entrypointsFinder ??= app(EntrypointsFinder::class);
-        $this->heartbeatChecker ??= app(HeartbeatChecker::class);
-        $this->tagGenerator ??= app(TagGenerator::class);
+        $this->entrypointsFinder = $this->entrypointsFinder ?? app(EntrypointsFinder::class);
+        $this->heartbeatChecker = $this->heartbeatChecker ?? app(HeartbeatChecker::class);
+        $this->tagGenerator = $this->tagGenerator ?? app(TagGenerator::class);
     }
-    
+
     /**
      * Returns the manifest, reading it from the disk if necessary.
      *
@@ -58,7 +73,7 @@ final class Configuration
     /**
      * Returns the manifest's md5.
      */
-    public function getHash(): string|null
+    public function getHash(): ?string
     {
         if (!file_exists($path = $this->getManifestPath())) {
             return null;
@@ -69,6 +84,8 @@ final class Configuration
 
     /**
      * Gets the tag for the given entry.
+     * @throws NoSuchEntrypointException
+     * @throws NoBuildPathException
      */
     public function getTag(string $entryName): string
     {
@@ -76,12 +93,19 @@ final class Configuration
             return $this->getManifest()->getEntry($entryName);
         }
 
-        return $this->getEntries()->first(fn (string $chunk) => str_contains($chunk, $entryName))
-            ?? throw NoSuchEntrypointException::inConfiguration($entryName, $this->getName());
+        $result = $this->getEntries()->first(fn(string $chunk) => str_contains($chunk, $entryName));
+
+        if ($result === null) {
+            throw NoSuchEntrypointException::inConfiguration($entryName, $this->getName());
+        }
+
+        return $result;
     }
 
     /**
      * Gets every chunk.
+     *
+     * @throws NoBuildPathException
      */
     public function getEntries(): Collection
     {
@@ -90,7 +114,7 @@ final class Configuration
         }
 
         return $this->findEntrypoints()
-            ->map(fn (\SplFileInfo $file) => $this->createDevelopmentTag(
+            ->map(fn(\SplFileInfo $file) => $this->createDevelopmentTag(
                 Str::of($file->getPathname())
                     ->replace(base_path(), '')
                     ->replace('\\', '/')
@@ -100,6 +124,8 @@ final class Configuration
 
     /**
      * Gets all tags for this configuration.
+     *
+     * @throws NoBuildPathException
      */
     public function getTags(): string
     {
@@ -110,10 +136,10 @@ final class Configuration
         }
 
         return $tags->merge($this->getEntries())
-            ->map(fn ($entrypoint) => (string) $entrypoint)
+            ->map(fn($entrypoint) => (string)$entrypoint)
             ->join('');
     }
-    
+
     /**
      * Gets the script tag for the client module.
      */
@@ -218,7 +244,7 @@ final class Configuration
                 return $result;
             }
         }
-        
+
         // If the development server is disabled, use the manifest.
         if (!$this->config('dev_server.enabled', true)) {
             return true;
@@ -278,7 +304,7 @@ final class Configuration
     /**
      * Gets an option value for this specific Vite configuration.
      */
-    protected function config(mixed $key = null, mixed $default = null): mixed
+    protected function config($key = null, $default = null)
     {
         if ($key) {
             return config("vite.configs.{$this->name}.{$key}", $default);

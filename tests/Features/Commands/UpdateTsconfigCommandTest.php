@@ -45,7 +45,7 @@ it('preserves indentation of the existing tsconfig.json', function () {
         
         expect(File::exists($tsconfigPath))->toBeTrue();
         expect(explode('"', explode("\n", File::get($tsconfigPath))[1])[0])->toBe('  ');
-    }, preserve: true);
+    }, __DIR__, true);
 });
 
 it('throws an error if the tsconfig is malformatted', function () {

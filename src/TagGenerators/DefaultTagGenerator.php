@@ -15,20 +15,20 @@ final class DefaultTagGenerator implements TagGenerator
     {
         return sprintf('<link rel="stylesheet" href="%s"%s />', $url, $this->processIntegrity($chunk));
     }
-    
+
     protected function processIntegrity(Chunk $chunk = null): string
     {
-        if (!$chunk?->integrity) {
+        if (!$chunk->integrity) {
             return '';
         }
 
         $attributes = [
-            'integrity' => $chunk->integrity,
+            'integrity'   => $chunk->integrity,
             'crossorigin' => 'anonymous',
         ];
-        
+
         return ' ' . collect($attributes)
-            ->map(fn ($value, $key) => sprintf('%s="%s"', $key, $value))
-            ->join(' ');
+                ->map(fn($value, $key) => sprintf('%s="%s"', $key, $value))
+                ->join(' ');
     }
 }
