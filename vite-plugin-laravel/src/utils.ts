@@ -1,82 +1,83 @@
-import c from 'chalk'
-import { execaSync } from 'execa'
-import { loadEnv } from 'vite'
-import { PhpFinderOptions } from './types'
+import c from 'chalk';
+import {execaSync} from 'execa';
+import {loadEnv} from 'vite';
+import {PhpFinderOptions} from './types';
 
 export function parseUrl(urlString?: string) {
-	if (!urlString) {
-		return
-	}
+    if (!urlString) {
+        return;
+    }
 
-	try {
-		return new URL(urlString)
-	} catch {}
+    try {
+        return new URL(urlString);
+    } catch {
+    }
 }
 
 export function finish(str: string | undefined, character: string, _default: string = ''): string {
-	if (!str) {
-		return _default
-	}
+    if (!str) {
+        return _default;
+    }
 
-	if (!str.endsWith(character)) {
-		return str + character
-	}
+    if (!str.endsWith(character)) {
+        return str + character;
+    }
 
-	return str
+    return str;
 }
 
 export function wrap<T>(input: undefined | T | T[], _default: T[]): T[] {
-	if (!input) {
-		return _default
-	}
+    if (!input) {
+        return _default;
+    }
 
-	if (Array.isArray(input)) {
-		return input
-	}
+    if (Array.isArray(input)) {
+        return input;
+    }
 
-	return [input]
+    return [input];
 }
 
 /**
  * Finds the path to PHP.
  */
 export function findPhpPath(options: PhpFinderOptions = {}): string {
-	if (options.path) {
-		return options.path
-	}
+    if (options.path) {
+        return options.path;
+    }
 
-	if (!options.env) {
-		options.env = loadEnv(options.mode ?? process.env.NODE_ENV ?? 'development', process.cwd(), '')
-	}
+    if (!options.env) {
+        options.env = loadEnv(options.mode ?? process.env.NODE_ENV ?? 'development', process.cwd(), '');
+    }
 
-	return options.env.PHP_EXECUTABLE_PATH || 'php'
+    return options.env.PHP_EXECUTABLE_PATH || 'php';
 }
 
 /**
  * Calls an artisan command.
  */
 export function callArtisan(executable: string, ...params: string[]): string {
-	if (process.env.VITEST) {
-		return execaSync(process.env.TEST_ARTISAN_SCRIPT!, [executable, 'artisan', ...params], { encoding: 'utf-8' })?.stdout
-	}
+    if (process.env.VITEST) {
+        return execaSync(process.env.TEST_ARTISAN_SCRIPT!, [executable, 'artisan', ...params], {encoding: 'utf-8'})?.stdout;
+    }
 
-	return execaSync(executable, ['artisan', ...params])?.stdout
+    return execaSync(executable, ['artisan', ...params])?.stdout;
 }
 
 /**
  * Calls a shell command.
  */
 export function callShell(executable: string, ...params: string[]): string {
-	if (process.env.VITEST) {
-		return execaSync(process.env.TEST_ARTISAN_SCRIPT!, [executable, ...params])?.stdout
-	}
+    if (process.env.VITEST) {
+        return execaSync(process.env.TEST_ARTISAN_SCRIPT!, [executable, ...params])?.stdout;
+    }
 
-	return execaSync(executable, [...params])?.stdout
+    return execaSync(executable, [...params])?.stdout;
 }
 
 /**
  * Prints a warn message.
  */
 export function warn(prefix: string, message: string, ...args: any[]) {
-	console.warn(c.yellow.bold(`(!) ${c.cyan(prefix)} ${message}`, ...args))
+    console.warn(c.yellow.bold(`(!) ${c.cyan(prefix)} ${message}`, ...args));
 }

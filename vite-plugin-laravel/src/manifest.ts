@@ -1,9 +1,9 @@
-import fs from 'node:fs/promises'
-import path from 'node:path'
-import { createHash } from 'node:crypto'
-import { Manifest, ManifestChunk, Plugin, ResolvedConfig } from 'vite'
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import {createHash} from 'node:crypto';
+import {Manifest, ManifestChunk, Plugin, ResolvedConfig} from 'vite';
 
-const PREFIX = 'vite:laravel:config'
+const PREFIX = 'vite:laravel:config';
 
 // The concept of this plugin was taken from the Vite Ruby project.
 // See: https://github.com/ElMassimo/vite_ruby/blob/main/vite-plugin-ruby/src/manifest.ts
@@ -15,101 +15,117 @@ const PREFIX = 'vite:laravel:config'
  * @see https://github.com/innocenzi/laravel-vite/issues/153
  */
 export function manifest(): Plugin {
-	const manifest = new Map<string, ManifestChunk>()
+    const manifest = new Map<string, ManifestChunk>();
 
-	let config: ResolvedConfig
+    let config: ResolvedConfig;
 
-	return {
-		name: PREFIX,
-		apply: 'build',
-		enforce: 'post',
+    return {
+        name: PREFIX,
+        apply: 'build',
+        enforce: 'post',
 
-		configResolved(resolved) {
-			config = resolved
-		},
+        configResolved(resolved) {
+            config = resolved;
+        },
 
-		async generateBundle(_, bundle) {
-			const entrypoints = getEntrypoints(config)
+        async generateBundle(_, bundle) {
+            const entrypoints = getEntrypoints(config);
 
-			if (!entrypoints) {
-				return
-			}
+            if (!entrypoints) {
+                return;
+            }
 
-			const values = Object.values(bundle)
-			const assets = values.filter((c) => c.type === 'asset') //  as OutputAsset[] // from rollup
+            const values = Object.values(bundle);
+            const assets = values.filter((c) => c.type === 'asset'); //  as OutputAsset[] // from rollup
 
-			// -- CSS
+            // -- CSS
 
-			const cssEntrypoints = entrypoints.filter((entry) => isStylesheet(entry))
-			const cssAssets = assets.filter((asset) => isStylesheet(asset.name!))
+            const cssEntrypoints = entrypoints.filter((entry) => isStylesheet(entry));
+            const cssAssets = assets.filter((asset) => isStylesheet(asset.name!));
 
-			if (config.build.cssCodeSplit) {
-				// add CSS entrypoints to manifest
-				for (const chunk of cssAssets) {
-					if (!chunk.name) {
-						continue
-					}
-					const name = removeExtension(chunk.name!)
-					for (const entry of cssEntrypoints) {
-						if (removeExtension(path.basename(entry)) === name) {
-							manifest.set(entry, { file: chunk.fileName, src: entry, isEntry: true })
-						}
-					}
-				}
-			} else {
-				// Vite emits a single CSS file in this mode, named `style.css`
-				const chunk = assets.find((asset) => asset.name === 'style.css')
-				if (chunk) {
-					manifest.set(chunk.name!, { file: chunk.fileName, src: chunk.name! })
-				}
-			}
+            if (config.build.cssCodeSplit) {
+                // add CSS entrypoints to manifest
+                for (const chunk of cssAssets) {
+                    if (!chunk.name) {
+                        continue;
+                    }
+                    const name = removeExtension(chunk.name!);
+                    for (const entry of cssEntrypoints) {
+                        if (removeExtension(path.basename(entry)) === name) {
+                            manifest.set(entry, {
+                                file: chunk.fileName,
+                                src: entry,
+                                isEntry: true,
+                            });
+                        }
+                    }
+                }
+            } else {
+                // Vite emits a single CSS file in this mode, named `style.css`
+                const chunk = assets.find((asset) => asset.name === 'style.css');
+                if (chunk) {
+                    manifest.set(chunk.name!, {
+                        file: chunk.fileName,
+                        src: chunk.name!,
+                    });
+                }
+            }
 
-			// -- Remaining Assets
+            // -- Remaining Assets
 
-			const remaining = entrypoints.filter((entry) => isAssetEntrypoint(entry))
+            const remaining = entrypoints.filter((entry) => isAssetEntrypoint(entry));
 
-			for (const entry of remaining) {
-				const fullPath = path.join(config.root, entry)
-				const source = await fs.readFile(fullPath)
-				const hash = getAssetHash(source)
+            for (const entry of remaining) {
+                const fullPath = path.join(config.root, entry);
+                const source = await fs.readFile(fullPath);
+                const hash = getAssetHash(source);
 
-				const ext = path.extname(entry)
-				const name = removeExtension(entry)
-				const fileName = path.posix.join(
-					config.build.assetsDir,
-					`${path.basename(name)}.${hash}${ext}`,
-				)
+                const ext = path.extname(entry);
+                const name = removeExtension(entry);
+                const fileName = path.posix.join(
+                    config.build.assetsDir,
+                    `${path.basename(name)}.${hash}${ext}`,
+                );
 
-				manifest.set(entry, { file: fileName, src: entry, isEntry: true })
+                manifest.set(entry, {
+                    file: fileName,
+                    src: entry,
+                    isEntry: true,
+                });
 
-				if (!bundle[fileName]) {
-					this.emitFile({ name: entry, fileName, source, type: 'asset' })
-				}
-			}
-		},
+                if (!bundle[fileName]) {
+                    this.emitFile({
+                        name: entry,
+                        fileName,
+                        source,
+                        type: 'asset',
+                    });
+                }
+            }
+        },
 
-		async writeBundle(_opts, bundle) {
-			if (!bundle['manifest.json']) {
-				return
-			}
+        async writeBundle(_opts, bundle) {
+            if (!bundle['manifest.json']) {
+                return;
+            }
 
-			// this is where the patching takes place,
-			// we find the manifest, read it, and then merge it with our own.
-			// once done, we write it back to disk
+            // this is where the patching takes place,
+            // we find the manifest, read it, and then merge it with our own.
+            // once done, we write it back to disk
 
-			const manifestPath = path.resolve(config.root, config.build.outDir, 'manifest.json')
-			const viteManifest = JSON.parse(await fs.readFile(manifestPath, 'utf8')) as Manifest
+            const manifestPath = path.resolve(config.root, config.build.outDir, 'manifest.json');
+            const viteManifest = JSON.parse(await fs.readFile(manifestPath, 'utf8')) as Manifest;
 
-			for (const [key, value] of Object.entries(viteManifest)) {
-				manifest.set(key, value)
-			}
+            for (const [key, value] of Object.entries(viteManifest)) {
+                manifest.set(key, value);
+            }
 
-			await fs.writeFile(
-				manifestPath,
-				JSON.stringify(Object.fromEntries(manifest), null, 2),
-			)
-		},
-	}
+            await fs.writeFile(
+                manifestPath,
+                JSON.stringify(Object.fromEntries(manifest), null, 2),
+            );
+        },
+    };
 }
 
 /**
@@ -117,43 +133,43 @@ export function manifest(): Plugin {
  * Entrypoints will be relative to the config root.
  */
 function getEntrypoints(config: ResolvedConfig) {
-	let input = config.build.rollupOptions.input
+    let input = config.build.rollupOptions.input;
 
-	if (!input) {
-		return null
-	}
+    if (!input) {
+        return null;
+    }
 
-	if (typeof input === 'string') {
-		input = [input]
-	}
+    if (typeof input === 'string') {
+        input = [input];
+    }
 
-	if (typeof input === 'object' && !Array.isArray(input)) {
-		const keys = Object.keys(input)
-		if (keys.length === 0) {
-			return null
-		}
-		input = keys
-	}
+    if (typeof input === 'object' && !Array.isArray(input)) {
+        const keys = Object.keys(input);
+        if (keys.length === 0) {
+            return null;
+        }
+        input = keys;
+    }
 
-	if (input.length === 0) {
-		return null
-	}
+    if (input.length === 0) {
+        return null;
+    }
 
-	return input.map((entry) => path.relative(config.root, entry).replaceAll('\\', '/'))
+    return input.map((entry) => path.relative(config.root, entry).replaceAll('\\', '/'));
 }
 
 /**
  * Removes the extension from a filename.
  */
 function removeExtension(filename: string) {
-	return filename.replace(/\.[^.]*$/, '')
+    return filename.replace(/\.[^.]*$/, '');
 }
 
 /**
  * Determines if a filename is a stylesheet, e.g. `.css` or `.scss`.
  */
 function isStylesheet(filename: string) {
-	return /\.(css|less|sass|scss|styl|stylus|pcss|postcss)$/.test(filename)
+    return /\.(css|less|sass|scss|styl|stylus|pcss|postcss)$/.test(filename);
 }
 
 /**
@@ -162,16 +178,16 @@ function isStylesheet(filename: string) {
  * This is pretty much non `html`, `js` and `css` files.
  */
 function isAssetEntrypoint(filename: string) {
-	if (isStylesheet(filename)) {
-		return false
-	}
+    if (isStylesheet(filename)) {
+        return false;
+    }
 
-	return !/\.(html|jsx?|tsx?)$/.test(filename)
+    return !/\.(html|jsx?|tsx?)$/.test(filename);
 }
 
 /**
  * Gets the asset hash for the contents of a file, the same way Vite does it.
  */
 function getAssetHash(content: Buffer) {
-	return createHash('sha256').update(content).digest('hex').slice(0, 8)
+    return createHash('sha256').update(content).digest('hex').slice(0, 8);
 }
