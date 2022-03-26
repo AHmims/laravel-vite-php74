@@ -16,16 +16,13 @@
 	],
 	"require": {
 		"php": "^7.4",
-		"guzzlehttp/guzzle": "^7.4.2",
-		"illuminate/contracts": "8.83.5",
-		"illuminate/support": "8.83.5",
+		"guzzlehttp/guzzle": "^6.5.5",
+		"illuminate/contracts": "5.7.19",
+		"illuminate/support": "5.7.19",
 		"spatie/laravel-package-tools": "^1.11.3"
 	},
 	"require-dev": {
 		"friendsofphp/php-cs-fixer": "^v3.8.0",
-		"orchestra/testbench": "^v6.24.1",
-		"pestphp/pest": "^v1.21.2",
-		"phpunit/phpunit": "^9.5.19",
 		"symfony/process": "^v5.4.5"
 	},
 	"autoload": {
