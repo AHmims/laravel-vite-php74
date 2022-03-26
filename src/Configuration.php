@@ -190,7 +190,7 @@ final class Configuration
     /**
      * Gets a configuration value.
      */
-    public function getConfig(string $key = null): mixed
+    public function getConfig(string $key = null)
     {
         return $this->config($key);
     }
