@@ -154,7 +154,7 @@ function getEntrypoints(config: ResolvedConfig) {
     if (input.length === 0) {
         return null;
     }
-    
+
     return input.map((entry) => path.relative(config.root, entry).replace(/\\/g, '/'));
 }
 

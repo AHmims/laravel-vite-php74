@@ -1,11 +1,11 @@
 {
-	"name": "innocenzi/laravel-vite",
+	"name": "ahmims/laravel-vite-php74",
 	"description": "Vite integration for Laravel",
 	"keywords": [
 		"innocenzi",
 		"laravel-vite"
 	],
-	"homepage": "https://github.com/innocenzi/laravel-vite",
+	"homepage": "https://github.com/ahmims/laravel-vite-php74",
 	"license": "MIT",
 	"authors": [
 		{
