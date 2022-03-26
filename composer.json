@@ -23,8 +23,8 @@
 	"require": {
 		"php": "^7.4",
 		"guzzlehttp/guzzle": "^6.5.5",
-		"illuminate/contracts": "7.x-dev",
-		"illuminate/support": "7.x-dev",
+		"illuminate/contracts": "5.8.x-dev",
+		"illuminate/support": "5.8.x-dev",
 		"ahmims/laravel_5.8-package-tools": "dev-main"
 	},
 	"require-dev": {
