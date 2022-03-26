@@ -5,13 +5,10 @@ import {artisan, fixture} from './utils';
 it('reads config from the given option object', () => {
     const result = readConfig({
         config: {
-            configName: 'configTest',
             aliases: {'@': 'resources'},
             build_path: 'build',
             dev_server: {
                 url: 'http://localhost:3000',
-                enabled: true,
-                build_path: 'dist',
             },
             entrypoints: {paths: 'resources/scripts/js'},
         },
