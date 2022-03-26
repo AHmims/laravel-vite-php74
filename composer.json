@@ -14,12 +14,18 @@
 			"role": "Developer"
 		}
 	],
+	"repositories": [
+		{
+		  "type": "vcs",
+		  "url": "https://github.com/AHmims/laravel_5.8-package-tools"
+		}
+	  ],
 	"require": {
 		"php": "^7.4",
 		"guzzlehttp/guzzle": "^6.5.5",
 		"illuminate/contracts": "7.x-dev",
 		"illuminate/support": "7.x-dev",
-		"spatie/laravel-package-tools": "^1.11.3"
+		"ahmims/laravel_5.8-package-tools": "dev-main"
 	},
 	"require-dev": {
 		"friendsofphp/php-cs-fixer": "^v3.8.0",
