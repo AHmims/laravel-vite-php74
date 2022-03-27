@@ -51,7 +51,7 @@ export const reload = (options: Options = {}): Plugin => {
     }
 
     function handleReload(file: string, server: ViteDevServer) {
-        file = file.replaceAll('\\', '/');
+        file = file.replace(/\\/g, '/');
 
         watchOptions.input.forEach((value) => {
             if (value.condition(file)) {
